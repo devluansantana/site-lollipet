@@ -301,9 +301,14 @@ const ProntuarioDetalhes: React.FC<ProntuarioDetalhesProps> = ({ pet, onClose })
       ));
     } catch (err) {
       const apiError = err as ApiError;
+      console.error('[Prontuario] Erro ao fazer upload:', err);
       alert(apiError.message || 'Erro ao fazer upload.');
     } finally {
       setUploadingFor(null);
+      // Reseta o input para permitir selecionar o mesmo arquivo novamente
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -359,22 +364,20 @@ const ProntuarioDetalhes: React.FC<ProntuarioDetalhesProps> = ({ pet, onClose })
           {historico.map(entry => (
             <div
               key={entry.id}
-              className={`p-4 rounded-lg shadow-sm border-l-4 ${
-                entry.tipo === 'Banho' || entry.tipo === 'Tosa'
+              className={`p-4 rounded-lg shadow-sm border-l-4 ${entry.tipo === 'Banho' || entry.tipo === 'Tosa'
                   ? 'border-pink-300 bg-pink-50 dark:border-pink-700 dark:bg-gray-700/50'
                   : 'border-cyan-300 bg-cyan-50 dark:border-cyan-700 dark:bg-gray-700/50'
-              }`}
+                }`}
             >
               <div className='flex justify-between items-center mb-2'>
                 <span className='text-xs font-semibold uppercase text-gray-600 dark:text-gray-300'>
                   {new Date(entry.data).toLocaleDateString('pt-BR')}
                 </span>
                 <div className='flex items-center gap-2'>
-                  <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                    entry.tipo === 'Banho' || entry.tipo === 'Tosa'
+                  <span className={`px-2 py-1 rounded-full text-xs font-bold ${entry.tipo === 'Banho' || entry.tipo === 'Tosa'
                       ? 'bg-pink-200 text-pink-800'
                       : 'bg-cyan-200 text-cyan-800'
-                  }`}>
+                    }`}>
                     {entry.tipo}
                   </span>
                   <button onClick={() => handleEdit(entry)} className='p-1 text-yellow-600 hover:text-yellow-700'>
@@ -439,7 +442,6 @@ const ProntuarioDetalhes: React.FC<ProntuarioDetalhesProps> = ({ pet, onClose })
                 />
                 <button
                   onClick={() => {
-                    setUploadingFor(entry.id);
                     fileInputRef.current?.click();
                   }}
                   disabled={uploadingFor === entry.id}

@@ -11,6 +11,7 @@ const authMiddleware = process.env.DISABLE_AUTH === 'true' ? (req, res, next) =>
 // Rotas de arquivos de prontuário (devem vir antes para não conflitar com :id)
 router.post('/:id/arquivos', authMiddleware, prontuarioArquivoController.uploadFile)
 router.get('/:id/arquivos', authMiddleware, prontuarioArquivoController.list)
+router.delete('/arquivos/:id', authMiddleware, prontuarioArquivoController.remove)
 
 // Rotas específicas de prontuário (devem vir antes das rotas com :id)
 router.put('/:id', authMiddleware, prontuarioController.update)
