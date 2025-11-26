@@ -48,7 +48,7 @@ services:
       - /app/node_modules
     environment:
       # CORREÇÃO: Ajustando para a porta 3001
-    - VITE_API_URL=http://api:3001
+    - VITE_API_URL=http://localhost:3001
 
 volumes:
   mariadb_data:
