@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # --- SERVIÇO DO BACKEND ---
+  api:
+    build:
+      context: ./backend-lolli-pet
+      dockerfile: Dockerfile
+    ports:
+      # CORREÇÃO: Mapeando a porta INTERNA 3001 para a EXTERNA 3001
+      - "3001:3001" 
+    volumes:
+      - ./backend-lolli-pet:/app
+      - /app/node_modules
+    env_file:
+      - ./backend-lolli-pet/.env
+
+  # --- SERVIÇO DO FRONTEND ---
+  web:
+    build:
+      context: ./lolli-pet-web
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./lolli-pet-web:/app
+      - /app/node_modules
+    environment:
+      # CORREÇÃO: Ajustando para a porta 3001
+    - VITE_API_URL=http://api:3001
