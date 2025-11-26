@@ -1,6 +1,9 @@
 import multer from 'multer'
-import { extname, resolve } from 'path'
+import { extname, resolve, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 const aleatorio = () => Math.floor(Math.random() * 10000 + 10000)
 
 export default {

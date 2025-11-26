@@ -1,10 +1,13 @@
 import multer from 'multer'
-import fs from 'fs'
-import { resolve } from 'path'
+import fs from 'node:fs'
+import { resolve, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import multerProntuarioConfig from '../config/multerProntuarioConfig.js'
 import Prontuario from '../models/Prontuario.js'
 import ProntuarioArquivo from '../models/ProntuarioArquivo.js'
 
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 const upload = multer(multerProntuarioConfig).single('arquivo')
 
 class ProntuarioArquivoController {

@@ -1,7 +1,10 @@
 import multer from 'multer'
-import { extname, resolve } from 'path'
-import fs from 'fs'
+import { extname, resolve, dirname } from 'node:path'
+import fs from 'node:fs'
+import { fileURLToPath } from 'node:url'
 
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 const aleatorio = () => Math.floor(Math.random() * 10000 + 10000)
 
 const uploadDir = resolve(__dirname, '..', '..', 'uploads', 'files')
