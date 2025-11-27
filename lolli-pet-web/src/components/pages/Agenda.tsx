@@ -10,6 +10,7 @@ import {
   Edit,
 } from 'lucide-react';
 import { listarAgendamentos, deletarAgendamento, atualizarAgendamento } from '../../services/api';
+import { StatusModal } from '../StatusModal';
 import type { Agendamento, ApiError } from '../../services/api';
 
 // --- COMPONENTE INTERNO: AgendamentoCard ---
@@ -18,7 +19,7 @@ interface AgendamentoCardProps {
   agendamento: Agendamento;
   tipo: 'clinica' | 'petshop';
   onCancel: (id: number) => void;
-  onEdit: (id: number, agendamento: Agendamento) => void;
+  onEdit: (agendamento: Agendamento) => void;
 }
 
 const AgendamentoCard: React.FC<AgendamentoCardProps> = ({
@@ -101,7 +102,7 @@ const AgendamentoCard: React.FC<AgendamentoCardProps> = ({
 
       <div className='flex gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700'>
         <button
-          onClick={() => onEdit(agendamento.id, agendamento)}
+          onClick={() => onEdit(agendamento)}
           className={`flex-1 p-2 bg-yellow-400 dark:bg-yellow-600 text-gray-800 dark:text-gray-50 font-bold rounded-md hover:bg-yellow-500 dark:hover:bg-yellow-700 transition flex items-center justify-center gap-1 text-sm`}
         >
           <Edit size={16} /> Editar
@@ -123,6 +124,9 @@ export function Agenda() {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [statusModalOpen, setStatusModalOpen] = useState(false);
+  const [selectedAgendamento, setSelectedAgendamento] = useState<Agendamento | null>(null);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   const hoje = new Date().toLocaleDateString('pt-BR', {
     weekday: 'long',
@@ -171,7 +175,7 @@ export function Agenda() {
     if (confirmacao) {
       try {
         await deletarAgendamento(id);
-        setAgendamentos(prev => prev.filter(ag => ag.id !== id));
+        setAgendamentos((prev: Agendamento[]) => prev.filter((ag: Agendamento) => ag.id !== id));
         alert(`Agendamento #${id} cancelado com sucesso!`);
       } catch (err) {
         console.error('[Agenda] Erro ao cancelar agendamento:', err);
@@ -181,26 +185,36 @@ export function Agenda() {
     }
   };
 
-  // Função para editar agendamento (exemplo: alterar status)
-  const handleEdit = async (id: number, agendamento: Agendamento) => {
-    const novoStatus = globalThis.prompt(
-      `Status atual: ${agendamento.status || 'agendado'}\n\nDigite o novo status (agendado, confirmado, cancelado, concluido):`,
-      agendamento.status || 'agendado'
-    );
+  // Função para abrir modal de edição de status
+  const handleEdit = (agendamento: Agendamento) => {
+    setSelectedAgendamento(agendamento);
+    setStatusModalOpen(true);
+  };
 
-    if (novoStatus && ['agendado', 'confirmado', 'cancelado', 'concluido'].includes(novoStatus)) {
-      try {
-        const atualizado = await atualizarAgendamento(id, { status: novoStatus as Agendamento['status'] });
-        setAgendamentos(prev => prev.map(ag => ag.id === id ? atualizado : ag));
-        alert(`Agendamento #${id} atualizado para: ${novoStatus}`);
-      } catch (err) {
-        console.error('[Agenda] Erro ao atualizar agendamento:', err);
-        const apiError = err as ApiError;
-        alert(apiError.message || 'Erro ao atualizar agendamento.');
-      }
-    } else if (novoStatus) {
-      alert('Status inválido. Use: agendado, confirmado, cancelado ou concluido');
+  // Função para confirmar mudança de status
+  const handleConfirmStatusChange = async (newStatus: string) => {
+    if (!selectedAgendamento) return;
+
+    setIsUpdatingStatus(true);
+    try {
+      const atualizado = await atualizarAgendamento(selectedAgendamento.id, { status: newStatus as Agendamento['status'] });
+      setAgendamentos((prev: Agendamento[]) => prev.map((ag: Agendamento) => ag.id === selectedAgendamento.id ? atualizado : ag));
+      setStatusModalOpen(false);
+      setSelectedAgendamento(null);
+      alert(`Agendamento #${selectedAgendamento.id} atualizado para: ${newStatus}`);
+    } catch (err) {
+      console.error('[Agenda] Erro ao atualizar agendamento:', err);
+      const apiError = err as ApiError;
+      alert(apiError.message || 'Erro ao atualizar agendamento.');
+    } finally {
+      setIsUpdatingStatus(false);
     }
+  };
+
+  // Função para fechar o modal
+  const handleCloseModal = () => {
+    setStatusModalOpen(false);
+    setSelectedAgendamento(null);
   };
 
   if (isLoading) {
@@ -277,6 +291,16 @@ export function Agenda() {
             )}
           </section>
         </div>
+
+        {/* Status Modal */}
+        <StatusModal
+          isOpen={statusModalOpen}
+          agendamentoId={selectedAgendamento?.id || 0}
+          currentStatus={selectedAgendamento?.status || 'agendado'}
+          onConfirm={handleConfirmStatusChange}
+          onCancel={handleCloseModal}
+          isLoading={isUpdatingStatus}
+        />
       </div>
     </div>
   );
