@@ -7,7 +7,8 @@ const router = new Router()
 router.post('/', loginRequired, agendamentoController.store)
 router.get('/', loginRequired, agendamentoController.index)
 router.get('/:id', loginRequired, agendamentoController.show)
-router.put('/', loginRequired, agendamentoController.update)
-router.delete('/', loginRequired, agendamentoController.delete)
+router.put('/:id', loginRequired, agendamentoController.update)
+router.delete('/:id', loginRequired, agendamentoController.delete)
 
 export default router
+
